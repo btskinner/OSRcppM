@@ -23,43 +23,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// OSRMrouteDF
-Rcpp::DataFrame OSRMrouteDF(Rcpp::DataFrame DF, std::string OSRMdata, std::string fromLon, std::string fromLat, std::string toLon, std::string toLat);
-RcppExport SEXP _OSRcppM_OSRMrouteDF(SEXP DFSEXP, SEXP OSRMdataSEXP, SEXP fromLonSEXP, SEXP fromLatSEXP, SEXP toLonSEXP, SEXP toLatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DF(DFSEXP);
-    Rcpp::traits::input_parameter< std::string >::type OSRMdata(OSRMdataSEXP);
-    Rcpp::traits::input_parameter< std::string >::type fromLon(fromLonSEXP);
-    Rcpp::traits::input_parameter< std::string >::type fromLat(fromLatSEXP);
-    Rcpp::traits::input_parameter< std::string >::type toLon(toLonSEXP);
-    Rcpp::traits::input_parameter< std::string >::type toLat(toLatSEXP);
-    rcpp_result_gen = Rcpp::wrap(OSRMrouteDF(DF, OSRMdata, fromLon, fromLat, toLon, toLat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// OSRMrouteVec
-Rcpp::NumericVector OSRMrouteVec(const Rcpp::NumericVector& xlon, const Rcpp::NumericVector& xlat, const Rcpp::NumericVector& ylon, const Rcpp::NumericVector& ylat, std::string OSRMdata, std::string measure);
-RcppExport SEXP _OSRcppM_OSRMrouteVec(SEXP xlonSEXP, SEXP xlatSEXP, SEXP ylonSEXP, SEXP ylatSEXP, SEXP OSRMdataSEXP, SEXP measureSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type xlon(xlonSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type xlat(xlatSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ylon(ylonSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ylat(ylatSEXP);
-    Rcpp::traits::input_parameter< std::string >::type OSRMdata(OSRMdataSEXP);
-    Rcpp::traits::input_parameter< std::string >::type measure(measureSEXP);
-    rcpp_result_gen = Rcpp::wrap(OSRMrouteVec(xlon, xlat, ylon, ylat, OSRMdata, measure));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_OSRcppM_OSRMroute", (DL_FUNC) &_OSRcppM_OSRMroute, 3},
-    {"_OSRcppM_OSRMrouteDF", (DL_FUNC) &_OSRcppM_OSRMrouteDF, 6},
-    {"_OSRcppM_OSRMrouteVec", (DL_FUNC) &_OSRcppM_OSRMrouteVec, 6},
     {NULL, NULL, 0}
 };
 
