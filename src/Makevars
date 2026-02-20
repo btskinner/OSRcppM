@@ -1,6 +1,0 @@
-
-PKG_LIBS=-losrm -lboost_filesystem-mt -lboost_iostreams-mt -lboost_system-mt \
-		-lboost_thread-mt -ltbb -ltbbmalloc -lz
-PKG_CPPFLAGS=-I/usr/local/include/osrm \
-		-I/usr/local/include/osrm-backendthird-party/libosmium/include \
-		-I/usr/local/include/luabind -I/usr/local/include/lua5.1

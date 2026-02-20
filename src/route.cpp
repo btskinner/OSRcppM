@@ -22,9 +22,9 @@
 
 // [[Rcpp::export]]
 Rcpp::List OSRMroute(Rcpp::DataFrame FromDF,
-		     Rcpp::DataFrame ToDF,
-		     std::string OSRMdata
-		     ) {
+                     Rcpp::DataFrame ToDF,
+                     std::string OSRMdata
+                     ) {
 
   using namespace osrm;
 
@@ -52,9 +52,9 @@ Rcpp::List OSRMroute(Rcpp::DataFrame FromDF,
       RouteParameters params;
 
       params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-	    util::FloatLatitude{xlat[i]}});
+          util::FloatLatitude{xlat[i]}});
       params.coordinates.push_back({util::FloatLongitude{ylon[j]},
-	    util::FloatLatitude{ylat[j]}});
+          util::FloatLatitude{ylat[j]}});
 
       // init JSON response object
       json::Object result;
@@ -82,17 +82,17 @@ Rcpp::List OSRMroute(Rcpp::DataFrame FromDF,
   time.attr("dimnames") = dimnms;
 
   return Rcpp::List::create(Rcpp::Named("meters") = dist,
-			    Rcpp::Named("seconds") = time);
+                            Rcpp::Named("seconds") = time);
 }
 
 // [[Rcpp::export]]
 Rcpp::DataFrame OSRMrouteDF(Rcpp::DataFrame DF,
-			    std::string OSRMdata,
-			    std::string fromLon = "flon",
-			    std::string fromLat = "flat",
-			    std::string toLon = "tlon",
-			    std::string toLat = "tlat"
-			    ) {
+                            std::string OSRMdata,
+                            std::string fromLon = "flon",
+                            std::string fromLat = "void name()lat",
+                            std::string toLon = "tlon",
+                            std::string toLat = "tlat"
+                            ) {
 
   using namespace osrm;
 
@@ -114,48 +114,48 @@ Rcpp::DataFrame OSRMrouteDF(Rcpp::DataFrame DF,
 
   for (int i = 0; i < n; i++) {
 
-      // init route parameters
-      RouteParameters params;
+    // init route parameters
+    RouteParameters params;
 
-      params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-	    util::FloatLatitude{xlat[i]}});
-      params.coordinates.push_back({util::FloatLongitude{ylon[i]},
-	    util::FloatLatitude{ylat[i]}});
+    params.coordinates.push_back({util::FloatLongitude{xlon[i]},
+        util::FloatLatitude{xlat[i]}});
+    params.coordinates.push_back({util::FloatLongitude{ylon[i]},
+        util::FloatLatitude{ylat[i]}});
 
-      // init JSON response object
-      json::Object result;
+    // init JSON response object
+    json::Object result;
 
-      // compute route
-      const auto status = osrm.Route(params, result);
-      auto &routes = result.values["routes"].get<json::Array>();
+    // compute route
+    const auto status = osrm.Route(params, result);
+    auto &routes = result.values["routes"].get<json::Array>();
 
-      // take first response which is shortest (?) trip
-      auto &route = routes.values.at(0).get<json::Object>();
-      const auto distance = route.values["distance"].get<json::Number>().value;
-      const auto duration = route.values["duration"].get<json::Number>().value;
+    // take first response which is shortest (?) trip
+    auto &route = routes.values.at(0).get<json::Object>();
+    const auto distance = route.values["distance"].get<json::Number>().value;
+    const auto duration = route.values["duration"].get<json::Number>().value;
 
-      // store in matrices
-      dist[i] = distance;
-      time[i] = duration;
-    }
+    // store in matrices
+    dist[i] = distance;
+    time[i] = duration;
+  }
 
   // add row and column names
   return Rcpp::DataFrame::create(Rcpp::Named("flon") = xlon,
-				 Rcpp::Named("flat") = xlat,
-				 Rcpp::Named("tlon") = ylon,
-				 Rcpp::Named("tlat") = ylat,
-				 Rcpp::Named("meters") = dist,
-				 Rcpp::Named("seconds") = time);
+                                 Rcpp::Named("flat") = xlat,
+                                 Rcpp::Named("tlon") = ylon,
+                                 Rcpp::Named("tlat") = ylat,
+                                 Rcpp::Named("meters") = dist,
+                                 Rcpp::Named("seconds") = time);
 }
 
 // [[Rcpp::export]]
 Rcpp::NumericVector OSRMrouteVec(const Rcpp::NumericVector& xlon,
-				 const Rcpp::NumericVector& xlat,
-				 const Rcpp::NumericVector& ylon,
-				 const Rcpp::NumericVector& ylat,
-				 std::string OSRMdata,
-				 std::string measure = "distance"
-				 ) {
+                                 const Rcpp::NumericVector& xlat,
+                                 const Rcpp::NumericVector& ylon,
+                                 const Rcpp::NumericVector& ylat,
+                                 std::string OSRMdata,
+                                 std::string measure = "distance"
+                                 ) {
 
   using namespace osrm;
 
@@ -175,9 +175,9 @@ Rcpp::NumericVector OSRMrouteVec(const Rcpp::NumericVector& xlon,
     RouteParameters params;
 
     params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-	  util::FloatLatitude{xlat[i]}});
+        util::FloatLatitude{xlat[i]}});
     params.coordinates.push_back({util::FloatLongitude{ylon[i]},
-	  util::FloatLatitude{ylat[i]}});
+        util::FloatLatitude{ylat[i]}});
 
     // init JSON response object
     json::Object result;

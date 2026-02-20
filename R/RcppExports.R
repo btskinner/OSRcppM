@@ -2,14 +2,14 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 OSRMroute <- function(FromDF, ToDF, OSRMdata) {
-    .Call('OSRcppM_OSRMroute', PACKAGE = 'OSRcppM', FromDF, ToDF, OSRMdata)
+    .Call(`_OSRcppM_OSRMroute`, FromDF, ToDF, OSRMdata)
 }
 
-OSRMrouteDF <- function(DF, OSRMdata, fromLon = "flon", fromLat = "flat", toLon = "tlon", toLat = "tlat") {
-    .Call('OSRcppM_OSRMrouteDF', PACKAGE = 'OSRcppM', DF, OSRMdata, fromLon, fromLat, toLon, toLat)
+OSRMrouteDF <- function(DF, OSRMdata, fromLon = "flon", fromLat = "void name()lat", toLon = "tlon", toLat = "tlat") {
+    .Call(`_OSRcppM_OSRMrouteDF`, DF, OSRMdata, fromLon, fromLat, toLon, toLat)
 }
 
 OSRMrouteVec <- function(xlon, xlat, ylon, ylat, OSRMdata, measure = "distance") {
-    .Call('OSRcppM_OSRMrouteVec', PACKAGE = 'OSRcppM', xlon, xlat, ylon, ylat, OSRMdata, measure)
+    .Call(`_OSRcppM_OSRMrouteVec`, xlon, xlat, ylon, ylat, OSRMdata, measure)
 }
 
