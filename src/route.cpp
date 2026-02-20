@@ -15,184 +15,136 @@
 #include <utility>
 #include <cstdlib>
 
+const double M2MILES = 0.00062137119223733;
+
 // [[Rcpp::export]]
-Rcpp::List OSRMroute(Rcpp::DataFrame FromDF,
-                     Rcpp::DataFrame ToDF,
-                     std::string OSRMdata
-                     ) {
+Rcpp::List osrm_route(double &xlon,
+                      double &xlat,
+                      double &ylon,
+                      double &ylat,
+                      std::string& osmfile,
+                      const std::string& algo = "CH"
+                      ) {
 
-  using namespace osrm;
-
-  // set up configuration based on pre-compilied OSRM data
-  EngineConfig config;
-  config.storage_config = {OSRMdata};
+  // set up configuration based on pre-compilied OSRM data; osm_file should be
+  // the extracted, partitioned, and customized suite of data files ending with
+  // *.osrm; eg., ../path/to/united-states-latest.osrm
+  osrm::EngineConfig config;
+  config.storage_config = {osmfile};
   config.use_shared_memory = false;
-  OSRM osrm{config};
-
-  // init vectors for coordinates
-  Rcpp::NumericVector xlat = FromDF["lat"];
-  Rcpp::NumericVector xlon = FromDF["lon"];
-  Rcpp::NumericVector ylat = ToDF["lat"];
-  Rcpp::NumericVector ylon = ToDF["lon"];
-
-  int n = xlat.size();
-  int k = ylat.size();
-  Rcpp::NumericMatrix dist(n,k);
-  Rcpp::NumericMatrix time(n,k);
-
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < k; j++) {
-
-      // init route parameters
-      RouteParameters params;
-
-      params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-          util::FloatLatitude{xlat[i]}});
-      params.coordinates.push_back({util::FloatLongitude{ylon[j]},
-          util::FloatLatitude{ylat[j]}});
-
-      // init JSON response object
-      engine::api::ResultT result = json::Object();
-
-      // compute route
-      const auto status = osrm.Route(params, result);
-      auto &json_result = std::get<json::Object>(result);
-      auto &routes = std::get<json::Array>(json_result.values["routes"]);
-
-      // take first response which is shortest (?) trip
-      auto &route = std::get<json::Object>(routes.values.at(0));
-      const auto distance = std::get<json::Number>(route.values["distance"]).value;
-      const auto duration = std::get<json::Number>(route.values["duration"]).value;
-
-      // store in matrices
-      dist(i,j) = distance;
-      time(i,j) = duration;
-    }
+  if (algo == "MLD") {
+    config.algorithm = osrm::EngineConfig::Algorithm::MLD;
+  } else {
+    config.algorithm = osrm::EngineConfig::Algorithm::CH;
   }
+  const osrm::OSRM osrm{config};
 
-  // add row and column names
-  Rcpp::CharacterVector rnms = FromDF["id"];
-  Rcpp::CharacterVector cnms = ToDF["id"];
-  Rcpp::List dimnms = Rcpp::List::create(rnms, cnms);
-  dist.attr("dimnames") = dimnms;
-  time.attr("dimnames") = dimnms;
+  // init route parameters
+  osrm::RouteParameters params;
 
-  return Rcpp::List::create(Rcpp::Named("meters") = dist,
-                            Rcpp::Named("seconds") = time);
+  params.coordinates.push_back({osrm::util::FloatLongitude{xlon},
+      osrm::util::FloatLatitude{xlat}});
+  params.coordinates.push_back({osrm::util::FloatLongitude{ylon},
+      osrm::util::FloatLatitude{ylat}});
+
+  // init JSON response object
+  osrm::engine::api::ResultT result = osrm::json::Object();
+
+  // execute routing request
+  const auto status = osrm.Route(params, result);
+  auto &json_result = std::get<osrm::json::Object>(result);
+  if (status == osrm::Status::Error) {
+    const auto code = std::get<osrm::json::String>(json_result.values["code"]).value;
+    const auto message = std::get<osrm::json::String>(json_result.values["message"]).value;
+    std::cout << "Code: " << code << "\n";
+    std::cout << "Message: " << message << "\n";
+    Rcpp::stop("");
+  }
+  auto &routes = std::get<osrm::json::Array>(json_result.values["routes"]);
+  // take first response which is shortest (?) trip
+  auto &route = std::get<osrm::json::Object>(routes.values.at(0));
+  const auto distance = std::get<osrm::json::Number>(route.values["distance"]).value;
+  const auto duration = std::get<osrm::json::Number>(route.values["duration"]).value;
+  // store in list
+  return Rcpp::List::create(Rcpp::_["miles"] = distance * M2MILES,
+                            Rcpp::_["minutes"] = duration / 60.0);
 }
 
-// // [[Rcpp::export]]
-// Rcpp::DataFrame OSRMrouteDF(Rcpp::DataFrame DF,
-//                             std::string OSRMdata,
-//                             std::string fromLon = "flon",
-//                             std::string fromLat = "void name()lat",
-//                             std::string toLon = "tlon",
-//                             std::string toLat = "tlat"
-//                             ) {
+// [[Rcpp::export]]
+double osrm_minutes(double &xlon,
+                    double &xlat,
+                    double &ylon,
+                    double &ylat,
+                    std::string& osmfile,
+                    const std::string& algo = "CH"
+                    ) {
+  Rcpp::List route = osrm_route(xlon, xlat, ylon, ylat, osmfile, algo);
+  return route["minutes"];
+}
 
-//   using namespace osrm;
+// [[Rcpp::export]]
+double osrm_miles(double &xlon,
+                  double &xlat,
+                  double &ylon,
+                  double &ylat,
+                  std::string& osmfile,
+                  const std::string& algo = "CH"
+                  ) {
+  Rcpp::List route = osrm_route(xlon, xlat, ylon, ylat, osmfile, algo);
+  return route["miles"];
+}
 
-//   // set up configuration based on pre-compilied OSRM data
-//   EngineConfig config;
-//   config.storage_config = {OSRMdata};
-//   config.use_shared_memory = false;
-//   OSRM osrm{config};
+// [[Rcpp::export]]
+Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
+                                   Rcpp::NumericVector& xlat,
+                                   Rcpp::NumericVector& ylon,
+                                   Rcpp::NumericVector& ylat,
+                                   std::string& osmfile,
+                                   const std::string& measure = "miles",
+                                   const std::string& algo = "CH"
+                                   ) {
+  // set metric
+  const auto metric = (measure == "miles") ? "distance" : "duration";
+  osrm::EngineConfig config;
+  config.storage_config = {osmfile};
+  config.use_shared_memory = false;
+  if (algo == "MLD") {
+    config.algorithm = osrm::EngineConfig::Algorithm::MLD;
+  } else {
+    config.algorithm = osrm::EngineConfig::Algorithm::CH;
+  }
+  const osrm::OSRM osrm{config};
 
-//   // init vectors for coordinates
-//   Rcpp::NumericVector xlat = DF["flat"];
-//   Rcpp::NumericVector xlon = DF["flon"];
-//   Rcpp::NumericVector ylat = DF["tlat"];
-//   Rcpp::NumericVector ylon = DF["tlon"];
+  // init out vector
+  int n = xlon.size();
+  Rcpp::NumericVector outvec(n);
 
-//   int n = xlat.size();
-//   Rcpp::NumericVector dist(n);
-//   Rcpp::NumericVector time(n);
-
-//   for (int i = 0; i < n; i++) {
-
-//     // init route parameters
-//     RouteParameters params;
-
-//     params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-//         util::FloatLatitude{xlat[i]}});
-//     params.coordinates.push_back({util::FloatLongitude{ylon[i]},
-//         util::FloatLatitude{ylat[i]}});
-
-//     // init JSON response object
-//     json::Object result;
-
-//     // compute route
-//     const auto status = osrm.Route(params, result);
-//     auto &routes = result.values["routes"].get<json::Array>();
-
-//     // take first response which is shortest (?) trip
-//     auto &route = routes.values.at(0).get<json::Object>();
-//     const auto distance = route.values["distance"].get<json::Number>().value;
-//     const auto duration = route.values["duration"].get<json::Number>().value;
-
-//     // store in matrices
-//     dist[i] = distance;
-//     time[i] = duration;
-//   }
-
-//   // add row and column names
-//   return Rcpp::DataFrame::create(Rcpp::Named("flon") = xlon,
-//                                  Rcpp::Named("flat") = xlat,
-//                                  Rcpp::Named("tlon") = ylon,
-//                                  Rcpp::Named("tlat") = ylat,
-//                                  Rcpp::Named("meters") = dist,
-//                                  Rcpp::Named("seconds") = time);
-// }
-
-// // [[Rcpp::export]]
-// Rcpp::NumericVector OSRMrouteVec(const Rcpp::NumericVector& xlon,
-//                                  const Rcpp::NumericVector& xlat,
-//                                  const Rcpp::NumericVector& ylon,
-//                                  const Rcpp::NumericVector& ylat,
-//                                  std::string OSRMdata,
-//                                  std::string measure = "distance"
-//                                  ) {
-
-//   using namespace osrm;
-
-//   // set up configuration based on pre-compilied OSRM data
-//   EngineConfig config;
-//   config.storage_config = {OSRMdata};
-//   config.use_shared_memory = false;
-//   OSRM osrm{config};
-
-//   // init out vector
-//   int n = xlat.size();
-//   Rcpp::NumericVector out(n);
-
-//   for (int i = 0; i < n; i++) {
-
-//     // init route parameters
-//     RouteParameters params;
-
-//     params.coordinates.push_back({util::FloatLongitude{xlon[i]},
-//         util::FloatLatitude{xlat[i]}});
-//     params.coordinates.push_back({util::FloatLongitude{ylon[i]},
-//         util::FloatLatitude{ylat[i]}});
-
-//     // init JSON response object
-//     json::Object result;
-
-//     // compute route
-//     const auto status = osrm.Route(params, result);
-//     auto &routes = result.values["routes"].get<json::Array>();
-
-//     // take first response which is shortest (?) trip
-//     auto &route = routes.values.at(0).get<json::Object>();
-
-//     // pull chosen measure (distance or duration)
-//     const auto meas = route.values[measure].get<json::Number>().value;
-
-//     // store in matrices
-//     out[i] = meas;
-
-//   }
-
-//   return out;
-
-// }
+  for (int i=0; i<n; i++) {
+    // init route parameters
+    osrm::RouteParameters params;
+    params.coordinates.push_back({osrm::util::FloatLongitude{xlon[i]},
+        osrm::util::FloatLatitude{xlat[i]}});
+    params.coordinates.push_back({osrm::util::FloatLongitude{ylon[i]},
+        osrm::util::FloatLatitude{ylat[i]}});
+    // init JSON response object
+    osrm::engine::api::ResultT result = osrm::json::Object();
+    // execute routing request
+    const auto status = osrm.Route(params, result);
+    auto &json_result = std::get<osrm::json::Object>(result);
+    if (status == osrm::Status::Error) {
+      outvec[i] = -1.0;
+    } else {
+      auto &routes = std::get<osrm::json::Array>(json_result.values["routes"]);
+      // take first response which is shortest (?) trip
+      auto &route = std::get<osrm::json::Object>(routes.values.at(0));
+      auto val = std::get<osrm::json::Number>(route.values[metric]).value;
+      if (measure == "miles") {
+        val = val * M2MILES;
+      } else {
+        val = val / 60.0;
+      }
+     outvec[i] = val;
+    }
+  }
+  return outvec;
+}

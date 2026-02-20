@@ -10,22 +10,77 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// OSRMroute
-Rcpp::List OSRMroute(Rcpp::DataFrame FromDF, Rcpp::DataFrame ToDF, std::string OSRMdata);
-RcppExport SEXP _OSRcppM_OSRMroute(SEXP FromDFSEXP, SEXP ToDFSEXP, SEXP OSRMdataSEXP) {
+// osrm_route
+Rcpp::List osrm_route(double& xlon, double& xlat, double& ylon, double& ylat, std::string& osmfile, const std::string& algo);
+RcppExport SEXP _OSRcppM_osrm_route(SEXP xlonSEXP, SEXP xlatSEXP, SEXP ylonSEXP, SEXP ylatSEXP, SEXP osmfileSEXP, SEXP algoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FromDF(FromDFSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ToDF(ToDFSEXP);
-    Rcpp::traits::input_parameter< std::string >::type OSRMdata(OSRMdataSEXP);
-    rcpp_result_gen = Rcpp::wrap(OSRMroute(FromDF, ToDF, OSRMdata));
+    Rcpp::traits::input_parameter< double& >::type xlon(xlonSEXP);
+    Rcpp::traits::input_parameter< double& >::type xlat(xlatSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylon(ylonSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylat(ylatSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type osmfile(osmfileSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(osrm_route(xlon, xlat, ylon, ylat, osmfile, algo));
+    return rcpp_result_gen;
+END_RCPP
+}
+// osrm_minutes
+double osrm_minutes(double& xlon, double& xlat, double& ylon, double& ylat, std::string& osmfile, const std::string& algo);
+RcppExport SEXP _OSRcppM_osrm_minutes(SEXP xlonSEXP, SEXP xlatSEXP, SEXP ylonSEXP, SEXP ylatSEXP, SEXP osmfileSEXP, SEXP algoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double& >::type xlon(xlonSEXP);
+    Rcpp::traits::input_parameter< double& >::type xlat(xlatSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylon(ylonSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylat(ylatSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type osmfile(osmfileSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(osrm_minutes(xlon, xlat, ylon, ylat, osmfile, algo));
+    return rcpp_result_gen;
+END_RCPP
+}
+// osrm_miles
+double osrm_miles(double& xlon, double& xlat, double& ylon, double& ylat, std::string& osmfile, const std::string& algo);
+RcppExport SEXP _OSRcppM_osrm_miles(SEXP xlonSEXP, SEXP xlatSEXP, SEXP ylonSEXP, SEXP ylatSEXP, SEXP osmfileSEXP, SEXP algoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double& >::type xlon(xlonSEXP);
+    Rcpp::traits::input_parameter< double& >::type xlat(xlatSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylon(ylonSEXP);
+    Rcpp::traits::input_parameter< double& >::type ylat(ylatSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type osmfile(osmfileSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(osrm_miles(xlon, xlat, ylon, ylat, osmfile, algo));
+    return rcpp_result_gen;
+END_RCPP
+}
+// osrm_route_vec
+Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon, Rcpp::NumericVector& xlat, Rcpp::NumericVector& ylon, Rcpp::NumericVector& ylat, std::string& osmfile, const std::string& measure, const std::string& algo);
+RcppExport SEXP _OSRcppM_osrm_route_vec(SEXP xlonSEXP, SEXP xlatSEXP, SEXP ylonSEXP, SEXP ylatSEXP, SEXP osmfileSEXP, SEXP measureSEXP, SEXP algoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type xlon(xlonSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type xlat(xlatSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type ylon(ylonSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type ylat(ylatSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type osmfile(osmfileSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type measure(measureSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(osrm_route_vec(xlon, xlat, ylon, ylat, osmfile, measure, algo));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_OSRcppM_OSRMroute", (DL_FUNC) &_OSRcppM_OSRMroute, 3},
+    {"_OSRcppM_osrm_route", (DL_FUNC) &_OSRcppM_osrm_route, 6},
+    {"_OSRcppM_osrm_minutes", (DL_FUNC) &_OSRcppM_osrm_minutes, 6},
+    {"_OSRcppM_osrm_miles", (DL_FUNC) &_OSRcppM_osrm_miles, 6},
+    {"_OSRcppM_osrm_route_vec", (DL_FUNC) &_OSRcppM_osrm_route_vec, 7},
     {NULL, NULL, 0}
 };
 
