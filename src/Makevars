@@ -1,2 +1,5 @@
 PKG_CPPFLAGS=-I/opt/homebrew/include/osrm
-PKG_LIBS=-losrm -ltbb -ltbbmalloc -lz
+PKG_LIBS=-losrm -lboost_thread-mt -ltbb -ltbbmalloc -lz
+
+# -lboost_regex-mt -lboost_date_time-mt -lboost_chrono-mt \
+# 	-lboost_filesystem-mt -lboost_iostreams-mt -lboost_system-mt \

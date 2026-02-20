@@ -9,5 +9,4 @@ Description: This package uses Rcpp to call the Open Source Routing Machine (OSR
         API from R. Requires working installation of OSRM on your local machine.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.1.1)
-LinkingTo: Rcpp,
-           BH
+LinkingTo: Rcpp
