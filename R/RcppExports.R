@@ -17,3 +17,7 @@ osrm_route_vec <- function(xlon, xlat, ylon, ylat, osmfile, measure = "miles", a
     .Call(`_OSRcppM_osrm_route_vec`, xlon, xlat, ylon, ylat, osmfile, measure, algo)
 }
 
+osrm_short <- function(xid, xlon, xlat, yid, ylon, ylat, osmfile, measure = "miles", algo = "CH") {
+    .Call(`_OSRcppM_osrm_short`, xid, xlon, xlat, yid, ylon, ylat, osmfile, measure, algo)
+}
+
