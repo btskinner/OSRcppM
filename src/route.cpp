@@ -104,7 +104,7 @@ Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
                                    const std::string& algo = "CH"
                                    ) {
   // set metric
-  const auto metric = (measure == "miles") ? "distance" : "duration";
+  const auto metric = (measure.compare("miles") == 0) ? "distance" : "duration";
   osrm::EngineConfig config;
   config.storage_config = {osmfile};
   config.use_shared_memory = false;
@@ -120,7 +120,7 @@ Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
   Rcpp::NumericVector outvec(n);
 
   // init route parameters
-  for (int i=0; i<n; i++) {
+  for (int i = 0; i < n; i++) {
     osrm::RouteParameters params;
     params.coordinates.push_back({osrm::util::FloatLongitude{xlon[i]},
         osrm::util::FloatLatitude{xlat[i]}});
@@ -161,7 +161,7 @@ Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
                            const std::string& algo = "CH"
                            ) {
   // set metric used to define shortest: distance or duration?
-  const auto smetric = (measure == "miles") ? "distance" : "duration";
+  const auto smetric = (measure.compare("miles") == 0) ? "distance" : "duration";
   // set up configuration based on pre-compilied OSRM data; osm_file should be
   // the extracted, partitioned, and customized suite of data files ending with
   // *.osrm; eg., ../path/to/united-states-latest.osrm
@@ -176,16 +176,18 @@ Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
   const osrm::OSRM osrm{config};
 
   // init vector for closest yid that is length of xid vector
-  Rcpp::NumericVector syid_vec = xid.length();
-  Rcpp::NumericVector metric_vec = xid.length();
+  int xn = xid.size();
+  int yn = yid.size();
+  Rcpp::NumericVector syid_vec(xn);
+  Rcpp::NumericVector metric_vec(xn);
 
   // loop through each x id
-  for (int i = 0; i < xid.length(); i++) {
+  for (int i = 0; i < xn; i++) {
     // init storage for id of closest y id and metric
     double syid = -1.0;
     double metric = 0.0;
     // loop through each y id
-    for (int j = 0; j < yid.length(); j++) {
+    for (int j = 0; j < yn; j++) {
        osrm::RouteParameters params;
        params.coordinates.push_back({osrm::util::FloatLongitude{xlon[i]},
            osrm::util::FloatLatitude{xlat[i]}});
@@ -203,7 +205,7 @@ Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
          // take first response which is shortest (?) trip
          auto &route = std::get<osrm::json::Object>(routes.values.at(0));
          auto val = std::get<osrm::json::Number>(route.values[smetric]).value;
-         if (j == 0) {
+         if (j == 0 || syid < 0) {
            syid = yid[j];
            metric = val;
          } else {
@@ -213,7 +215,7 @@ Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
        }
     }
     syid_vec[i] = syid;
-    metric_vec[i] = (smetric == "distance") ? metric * M2MILES : metric / 60.0;
+    metric_vec[i] = (measure.compare("miles") == 0) ? metric * M2MILES : metric / 60.0;
   }
   Rcpp::DataFrame df = Rcpp::DataFrame::create(Rcpp::_["start_id"] = xid,
                                                Rcpp::_["end_id"] = syid_vec,
