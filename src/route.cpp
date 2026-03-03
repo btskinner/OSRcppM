@@ -17,6 +17,7 @@
 
 const double M2MILES = 0.00062137119223733;
 
+//' @export
 // [[Rcpp::export]]
 Rcpp::List osrm_route(double &xlon,
                       double &xlat,
@@ -70,6 +71,7 @@ Rcpp::List osrm_route(double &xlon,
                             Rcpp::_["minutes"] = duration / 60.0);
 }
 
+//' @export
 // [[Rcpp::export]]
 double osrm_minutes(double &xlon,
                     double &xlat,
@@ -94,6 +96,7 @@ double osrm_miles(double &xlon,
   return route["miles"];
 }
 
+//' @export
 // [[Rcpp::export]]
 Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
                                    Rcpp::NumericVector& xlat,
@@ -119,13 +122,16 @@ Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
   int n = xlon.size();
   Rcpp::NumericVector outvec(n);
 
-  // init route parameters
+  // init route parameters; reserve size of 2
+  osrm::RouteParameters params;
+  params.coordinates.resize(2);
+  // loop through vector
   for (int i = 0; i < n; i++) {
-    osrm::RouteParameters params;
-    params.coordinates.push_back({osrm::util::FloatLongitude{xlon[i]},
-        osrm::util::FloatLatitude{xlat[i]}});
-    params.coordinates.push_back({osrm::util::FloatLongitude{ylon[i]},
-        osrm::util::FloatLatitude{ylat[i]}});
+    // assign by index
+    params.coordinates[0] = {osrm::util::FloatLongitude{xlon[i]},
+                             osrm::util::FloatLatitude{xlat[i]}};
+    params.coordinates[1] = {osrm::util::FloatLongitude{ylon[i]},
+                             osrm::util::FloatLatitude{ylat[i]}};
     // init JSON response object
     osrm::engine::api::ResultT result = osrm::json::Object();
     // execute routing request
@@ -149,6 +155,7 @@ Rcpp::NumericVector osrm_route_vec(Rcpp::NumericVector& xlon,
   return outvec;
 }
 
+//' @export
 // [[Rcpp::export]]
 Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
                            Rcpp::NumericVector &xlon,
@@ -186,33 +193,36 @@ Rcpp::DataFrame osrm_short(Rcpp::NumericVector &xid,
     // init storage for id of closest y id and metric
     double syid = -1.0;
     double metric = 0.0;
+    // init route paramters; reserve size of 2
+    osrm::RouteParameters params;
+    params.coordinates.resize(2);
     // loop through each y id
     for (int j = 0; j < yn; j++) {
-       osrm::RouteParameters params;
-       params.coordinates.push_back({osrm::util::FloatLongitude{xlon[i]},
-           osrm::util::FloatLatitude{xlat[i]}});
-       params.coordinates.push_back({osrm::util::FloatLongitude{ylon[j]},
-           osrm::util::FloatLatitude{ylat[j]}});
-       // init JSON response object
-       osrm::engine::api::ResultT result = osrm::json::Object();
-       // execute routing request
-       const auto status = osrm.Route(params, result);
-       auto &json_result = std::get<osrm::json::Object>(result);
-       if (status == osrm::Status::Error) {
-         continue;
-       } else {
-         auto &routes = std::get<osrm::json::Array>(json_result.values["routes"]);
-         // take first response which is shortest (?) trip
-         auto &route = std::get<osrm::json::Object>(routes.values.at(0));
-         auto val = std::get<osrm::json::Number>(route.values[smetric]).value;
-         if (j == 0 || syid < 0) {
-           syid = yid[j];
-           metric = val;
-         } else {
-           syid = (val < metric) ? yid[j] : syid;
-           metric = (val < metric) ? val : metric;
-         }
-       }
+      // assign by index
+      params.coordinates[0] = {osrm::util::FloatLongitude{xlon[i]},
+                               osrm::util::FloatLatitude{xlat[i]}};
+      params.coordinates[1] = {osrm::util::FloatLongitude{ylon[j]},
+                               osrm::util::FloatLatitude{ylat[j]}};
+      // init JSON response object
+      osrm::engine::api::ResultT result = osrm::json::Object();
+      // execute routing request
+      const auto status = osrm.Route(params, result);
+      auto &json_result = std::get<osrm::json::Object>(result);
+      if (status == osrm::Status::Error) {
+        continue;
+      } else {
+        auto &routes = std::get<osrm::json::Array>(json_result.values["routes"]);
+        // take first response which is shortest (?) trip
+        auto &route = std::get<osrm::json::Object>(routes.values.at(0));
+        auto val = std::get<osrm::json::Number>(route.values[smetric]).value;
+        if (j == 0 || syid < 0) {
+          syid = yid[j];
+          metric = val;
+        } else {
+          syid = (val < metric) ? yid[j] : syid;
+          metric = (val < metric) ? val : metric;
+        }
+      }
     }
     syid_vec[i] = syid;
     metric_vec[i] = (measure.compare("miles") == 0) ? metric * M2MILES : metric / 60.0;
